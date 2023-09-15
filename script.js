@@ -1,9 +1,49 @@
 import './style.css'
 import * as THREE from 'three'
-// import gsap from 'gsap'
+import gsap from 'gsap'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import * as dat from 'dat.gui'
 
-console.log(OrbitControls)
+const gui = new dat.GUI()
+
+const parameters = {
+    color: 0xff0000,
+    tiletype: 0xffffff,
+    paint: 0xffffff,
+    paint2: 0xffffff,
+    spin: () =>{
+        gsap.to(cube1.rotation, {duration: 1, x: cube1.rotation.x+5, y: cube1.rotation.y+10})
+    }
+}
+
+//cube UI
+gui
+    .addColor(parameters,'color')
+    .onChange(()=>{
+        Material.color.set(parameters.color)
+    })
+    .name('Cube Colour')
+
+
+//Wall UI
+gui
+    .addColor(parameters, 'paint2')
+    .onChange(()=>{
+        wallpaint2.color.set(parameters.paint2)
+
+    })
+    .name('2nd paint')
+
+gui 
+    .addColor(parameters,'paint')
+    .onChange(()=>{
+        wallpaint.color.set(parameters.paint)
+    })
+    .name('Wall Colour')
+
+gui
+    .add(parameters, 'spin')
+
 
 
 const canvas = document.querySelector('canvas.webgl')
@@ -27,11 +67,33 @@ const scene = new THREE.Scene()
 // scene.add(buildings)
 // scene.add(celestials)
 
-const cube1 = new THREE.Mesh(
-    new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshBasicMaterial({color: 'red'})
-)
+
+//Setting Floor
+// const FloorLayout = new THREE.PlaneBufferGeometry(5,5)
+// const Tile = new THREE.MeshBasicMaterial({color: parameters.tiletype})
+// const Floor = new THREE.Mesh(FloorLayout,Tile)
+// Walls.add(Floor)
+var layout = new THREE.PlaneBufferGeometry(5, 5, 8, 8)
+var wallpaint = new THREE.MeshBasicMaterial({ color: parameters.paint})
+var wallpaint2 = new THREE.MeshBasicMaterial({ color: parameters.paint2})
+var wall1 = new THREE.Mesh(layout, wallpaint)
+var wall2 = new THREE.Mesh(layout,wallpaint2)
+wall1.position.set(2,2,4)
+wall2.position.set(0,0,0)
+scene.add(wall1)
+scene.add(wall2)
+wall2.rotateX( - Math.PI / 2);
+
+const geometry = new THREE.BoxBufferGeometry(1,1,1)
+const Material = new THREE.MeshBasicMaterial({ color: parameters.color })
+const cube1 = new THREE.Mesh(geometry, Material)
+cube1.position.y = 1
 scene.add(cube1)
+// const cube1 = new THREE.Mesh(
+//     new THREE.BoxGeometry(1,1,1),
+//     new THREE.MeshBasicMaterial({color: 'red'})
+// )
+// scene.add(cube1)
 
 // const cube2 = new THREE.Mesh(
 //     new THREE.BoxGeometry(1,1,1),
@@ -53,7 +115,7 @@ scene.add(cube1)
 // )
 // moon.position.y = 3
 // moon.position.x = 4
-// celestials.add(moon)
+// scene.add(moon)
 
 // const sun = new THREE.Mesh(
 //     new THREE.CircleGeometry(1,32),
@@ -67,6 +129,40 @@ scene.add(cube1)
 // const CubeType = new THREE.MeshBasicMaterial({color: 'red'})
 // const Mesh = new THREE.Mesh(MyCube, CubeType)
 // scene.add(Mesh)
+
+//Wall Position
+gui
+    .add(wall1.position, 'y')
+        .min(-2)
+        .max(3)
+        .step(0.1)
+        .name('wall 1 position')
+        
+
+gui
+    .add(wall1.position,'x')
+    .min(-2)
+    .max(2)
+    .step(0.1)
+    .name('wall 1 also')
+
+
+//gui 
+////position cube
+gui
+    .add(cube1.position, 'y')
+        .min(-2)
+        .max(2)
+        .step(0.1)
+        .name('elevation')
+        
+
+gui
+    .add(cube1.position,'x')
+    .min(-2)
+    .max(2)
+    .step(0.1)
+    .name('path')    
 
 
 
@@ -112,11 +208,13 @@ window.addEventListener('dblclick',() =>{
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height )
 
 // const camera = new THREE.OrthographicCamera(1,-1,-1,1,0.1,100)
-// camera.position.x = 0
-// camera.position.y = 0
+camera.position.x = 0
+camera.position.y = 1
 camera.position.z = 3
+// camera.lookAt(moon.position)
 camera.lookAt(cube1.position)
 scene.add(camera)
+
 
 //controls
 const controls = new  OrbitControls(camera, canvas)
